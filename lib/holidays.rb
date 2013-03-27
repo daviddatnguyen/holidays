@@ -55,8 +55,8 @@ module Holidays
   @@cache = {}
   @@cache_range = {}
   class << self
-    def cache_range; @@cache_range; end
     def cache; @@cache; end
+    def cache_range; @@cache_range; end
   end
 
   WEEKS = {:first => 1, :second => 2, :third => 3, :fourth => 4, :fifth => 5, :last => -1, :second_last => -2, :third_last => -3}
@@ -118,11 +118,10 @@ module Holidays
     # get simple dates
     start_date, end_date = get_date(start_date), get_date(end_date)
 
-    cache_key = options.flatten
-    if range = @@cache_range[cache_key]
+    if range = @@cache_range[options]
       if start_date >= range.begin && end_date <= range.end
         holidays = []
-        @@cache[cache_key].each do |holiday|
+        @@cache[options].each do |holiday|
           if holiday[:date] >= start_date && holiday[:date] <= end_date
             holidays << holiday
           end
@@ -194,10 +193,11 @@ module Holidays
 
   # Allows a developer to explicitly calculate and cache holidays within a given period
   def self.cache_between(start_date, end_date, *options)
-    cache_key = options.flatten
     start_date, end_date     = get_date(start_date), get_date(end_date)
-    @@cache[cache_key]       = between(start_date, end_date, *options)
-    @@cache_range[cache_key] = start_date..end_date
+    holidays = between(start_date, end_date, *options)
+
+    @@cache[options] = holidays
+    @@cache_range[options] = start_date..end_date
   end
 
   # Merge a new set of definitions into the Holidays module.
