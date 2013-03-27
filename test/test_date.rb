@@ -24,7 +24,7 @@ class DateTests < Test::Unit::TestCase
     assert_equal 25, Date.calculate_mday(2009, 5, :last, 1)
     assert_equal 31, Date.calculate_mday(2010, 5, :last, 1)
     assert_equal 30, Date.calculate_mday(2011, 5, :last, 1)
-    
+
     # Labour day
     assert_equal 3, Date.calculate_mday(2007, 9, :first, 1)
     assert_equal 1, Date.calculate_mday(2008, 9, :first, :monday)
@@ -32,7 +32,7 @@ class DateTests < Test::Unit::TestCase
     assert_equal 5, Date.calculate_mday(2011, 9, :first, 1)
     assert_equal 5, Date.calculate_mday(2050, 9, :first, 1)
     assert_equal 4, Date.calculate_mday(2051, 9, :first, 1)
-    
+
     # Canadian thanksgiving
     assert_equal 8, Date.calculate_mday(2007, 10, :second, 1)
     assert_equal 13, Date.calculate_mday(2008, 10, :second, :monday)
@@ -45,12 +45,12 @@ class DateTests < Test::Unit::TestCase
     assert_equal 2, Date.calculate_mday(2007, 3, :first, :friday)
     assert_equal 30, Date.calculate_mday(2012, 1, :last, 1)
     assert_equal 29, Date.calculate_mday(2016, 2, :last, 1)
-    
+
     # From end of month
     assert_equal 26, Date.calculate_mday(2009, 8, -1, :wednesday)
     assert_equal 19, Date.calculate_mday(2009, 8, -2, :wednesday)
     assert_equal 12, Date.calculate_mday(2009, 8, -3, :wednesday)
-    
+
     assert_equal 13, Date.calculate_mday(2008, 8, -3, :wednesday)
     assert_equal 12, Date.calculate_mday(2009, 8, -3, :wednesday)
     assert_equal 11, Date.calculate_mday(2010, 8, -3, :wednesday)
@@ -104,6 +104,22 @@ class DateTests < Test::Unit::TestCase
   def test_date_holiday?
     assert Date.civil(2008,1,1).holiday?('ca')
     assert Date.today.holiday?('test')
+  end
+
+  def test_date_holiday_with_caching
+    options = [:ca]
+
+    assert Date.civil(2008,1,1).holiday?(*options)
+
+    Holidays.cache_between(Date.civil(2007,12,25), Date.civil(2008,1,5), *options)
+
+    assert Date.civil(2008,1,1).holiday?(*options)
+    Holidays.cache[options] = []
+
+    assert !Date.civil(2008,1,1).holiday?(*options)
+
+    Holidays.class_variable_set "@@cache", {}
+    Holidays.class_variable_set "@@cache_range", {}
   end
 
   def test_datetime_holiday?
