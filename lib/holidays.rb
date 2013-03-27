@@ -17,7 +17,7 @@ require 'date'
 #   By region and sub regions. For example, return holidays in Germany
 #   and all its sub regions with <tt>:de_</tt>.
 # [<tt>:region_sub</tt>]
-#   By sub region. Return national holidays in Spain plus holidays in Spain's 
+#   By sub region. Return national holidays in Spain plus holidays in Spain's
 #   Valencia region with <tt>:es_v</tt>.
 # [<tt>:any</tt>]
 #   Any region.  Return holidays from any loaded region.
@@ -69,7 +69,7 @@ module Holidays
   # [<tt>date</tt>]     A Date object.
   # [<tt>:options</tt>] One or more region symbols, <tt>:informal</tt> and/or <tt>:observed</tt>.
   #
-  # Returns an array of hashes or nil. See Holidays#between for the output 
+  # Returns an array of hashes or nil. See Holidays#between for the output
   # format.
   #
   # Also available via Date#holidays.
@@ -93,7 +93,7 @@ module Holidays
     options.delete(:no_observed)
     self.between(start_date, end_date, options).empty?
   end
-  
+
   # Get all holidays occuring between two dates, inclusively.
   #
   # Returns an array of hashes or nil.
@@ -118,11 +118,18 @@ module Holidays
     # get simple dates
     start_date, end_date = get_date(start_date), get_date(end_date)
 
-    if range = @@cache_range[options]
-      if range.begin < start_date && range.end > end_date
-        return @@cache[options].select do |holiday|
-          holiday[:date] >= start_date && holiday[:date] <= end_date
+    cache_key = options.flatten
+    if range = @@cache_range[cache_key]
+      if start_date >= range.begin && end_date <= range.end
+        holidays = []
+        @@cache[cache_key].each do |holiday|
+          if holiday[:date] >= start_date && holiday[:date] <= end_date
+            holidays << holiday
+          end
+          break if holiday[:date] > end_date
         end
+
+        return holidays
       end
     end
 
@@ -132,7 +139,7 @@ module Holidays
     dates = {}
     (start_date..end_date).each do |date|
       # Always include month '0' for variable-month holidays
-      dates[date.year] = [0] unless dates[date.year]      
+      dates[date.year] = [0] unless dates[date.year]
       # TODO: test this, maybe should push then flatten
       dates[date.year] << date.month unless dates[date.year].include?(date.month)
     end
@@ -143,14 +150,14 @@ module Holidays
 
         hbm.each do |h|
           next unless in_region?(regions, h[:regions])
-          
+
           # Skip informal holidays unless they have been requested
           next if h[:type] == :informal and not informal
-          
+
           if h[:function]
             # Holiday definition requires a calculation
             result = call_proc(h[:function], year)
-            
+
             # Procs may return either Date or an integer representing mday
             if result.kind_of?(Date)
               month = result.month
@@ -187,9 +194,10 @@ module Holidays
 
   # Allows a developer to explicitly calculate and cache holidays within a given period
   def self.cache_between(start_date, end_date, *options)
-    start_date, end_date = get_date(start_date), get_date(end_date)
-    @@cache[options]       = between(start_date, end_date, *options)
-    @@cache_range[options] = start_date..end_date
+    cache_key = options.flatten
+    start_date, end_date     = get_date(start_date), get_date(end_date)
+    @@cache[cache_key]       = between(start_date, end_date, *options)
+    @@cache_range[cache_key] = start_date..end_date
   end
 
   # Merge a new set of definitions into the Holidays module.
@@ -199,7 +207,7 @@ module Holidays
   def self.merge_defs(regions, holidays) # :nodoc:
     @@regions = @@regions | regions
     @@regions.uniq!
-    
+
     holidays.each do |month, holiday_defs|
       @@holidays_by_month[month] = [] unless @@holidays_by_month[month]
       holiday_defs.each do |holiday_def|
@@ -210,15 +218,15 @@ module Holidays
             if ex[:name] == holiday_def[:name] and ex[:wday] == holiday_def[:wday] and ex[:mday] == holiday_def[:mday] and ex[:week] == holiday_def[:week] and ex[:function_id] == holiday_def[:function_id] and ex[:type] == holiday_def[:type] and ex[:observed_id] == holiday_def[:observed_id]
               # append regions
               ex[:regions] << holiday_def[:regions]
-              
+
               # Should do this once we're done
               ex[:regions].flatten!
               ex[:regions].uniq!
               exists = true
             end
           end
-          
-          @@holidays_by_month[month] << holiday_def  unless exists            
+
+          @@holidays_by_month[month] << holiday_def  unless exists
       end
     end
   end
@@ -244,7 +252,7 @@ module Holidays
     day = ((h + l - 7 * m + 114) % 31) + 1
     Date.civil(year, month, day)
   end
-  
+
   # A method to calculate the orthodox easter date, returns date in the Gregorian (western) calendar
   # Safe until appr. 4100 AD, when one leap day will be removed.
   # Returns a Date object.
@@ -263,12 +271,12 @@ module Holidays
       # between the years 1583 and 1699 10 days are added to the julian day count
       when (year >= 1583 and year <= 1699)
         offset = 10
-      # after 1700, 1 day is added for each century, except if the century year is exactly divisible by 400 (in which case no days are added). 
+      # after 1700, 1 day is added for each century, except if the century year is exactly divisible by 400 (in which case no days are added).
       # Safe until 4100 AD, when one leap day will be removed.
-      when year >= 1700 
+      when year >= 1700
         offset = (year - 1700).divmod(100)[0] + ((year - year.divmod(100)[1]).divmod(400)[1] == 0 ? 0 : 1) - (year - year.divmod(100)[1] - 1700).divmod(400)[0] + 10
     end
-    # add offset to the julian day 
+    # add offset to the julian day
     return Date.jd(j_date.jd + offset)
   end
 
@@ -302,7 +310,7 @@ module Holidays
     date -= 1 if date.wday == 6
     date
   end
-  
+
   # Returns an array of symbols all the available holiday definitions.
   #
   # Optional `full_path` param is used internally for loading all the definitions.
@@ -310,7 +318,7 @@ module Holidays
     paths = Dir.glob(DEFINITION_PATH + '/*.rb')
     full_path ? paths : paths.collect { |path| path.match(/([a-z_-]+)\.rb/i)[1].to_sym }
   end
-  
+
   # Load all available holiday definitions
   def self.load_all
     self.available(true).each { |path| require path }
@@ -334,7 +342,7 @@ private
     end
   end
 
-  # Check regions against list of supported regions and return an array of 
+  # Check regions against list of supported regions and return an array of
   # symbols.
   #
   # If a wildcard region is found (e.g. <tt>:ca_</tt>) it is expanded into all
@@ -356,7 +364,7 @@ private
     end
 
     regions.flatten!
-    
+
     require "holidays/north_america" if regions.include?(:us) # special case for north_america/US cross-linking
 
     raise UnknownRegionError unless regions.all? { |r| r == :any or @@regions.include?(r) or begin require "holidays/#{r.to_s}"; rescue LoadError; false; end }
@@ -370,7 +378,7 @@ private
   # When requesting :ca, holidays in :ca but not its subregions should be returned.
   def self.in_region?(requested, available) # :nodoc:
     return true if requested.include?(:any)
-    
+
     # When an underscore is encountered, derive the parent regions
     # symbol and include both in the requested array.
     requested = requested.collect do |r|
@@ -389,16 +397,16 @@ private
   # ==== Benchmarks
   #
   # Lookup Easter Sunday, with caching, by number of iterations:
-  # 
+  #
   #       user     system      total        real
   # 0001  0.000000   0.000000   0.000000 (  0.000000)
   # 0010  0.000000   0.000000   0.000000 (  0.000000)
   # 0100  0.078000   0.000000   0.078000 (  0.078000)
   # 1000  0.641000   0.000000   0.641000 (  0.641000)
   # 5000  3.172000   0.015000   3.187000 (  3.219000)
-  # 
+  #
   # Lookup Easter Sunday, without caching, by number of iterations:
-  # 
+  #
   #       user     system      total        real
   # 0001  0.000000   0.000000   0.000000 (  0.000000)
   # 0010  0.016000   0.000000   0.016000 (  0.016000)
@@ -455,7 +463,7 @@ class Date
     holidays && !holidays.empty?
   end
 
-  # Calculate day of the month based on the week number and the day of the 
+  # Calculate day of the month based on the week number and the day of the
   # week.
   #
   # ==== Parameters
@@ -496,11 +504,11 @@ class Date
     if week > 0
       return ((week - 1) * 7) + 1 + ((wday - Date.civil(year, month,(week-1)*7 + 1).wday) % 7)
     end
-    
+
     days = MONTH_LENGTHS[month-1]
 
     days = 29 if month == 2 and Date.leap?(year)
-      
+
     return days - ((Date.civil(year, month, days).wday - wday + 7) % 7) - (7 * (week.abs - 1))
   end
 end
