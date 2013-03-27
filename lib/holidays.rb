@@ -74,7 +74,7 @@ module Holidays
   #
   # Also available via Date#holidays.
   def self.on(date, *options)
-    self.between(date, date, options)
+    self.between(date, date, *options)
   end
 
   # Does the given work-week have any holidays?
@@ -441,7 +441,7 @@ class Date
   #
   # Also available via Holidays#on.
   def holidays(*options)
-    Holidays.on(self, options)
+    Holidays.on(self, *options)
   end
 
   # Check if the current date is a holiday.
@@ -451,7 +451,7 @@ class Date
   #   Date.civil('2008-01-01').holiday?(:ca)
   #   => true
   def holiday?(*options)
-    holidays = self.holidays(options)
+    holidays = self.holidays(*options)
     holidays && !holidays.empty?
   end
 
