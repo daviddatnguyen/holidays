@@ -147,7 +147,6 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<rake>, [">= 0"])
       s.add_dependency(%q<rdoc>, [">= 2.4.2"])
       s.add_dependency(%q<jeweler>, [">= 0"])
-      s.add_dependency(%q<rdoc>, [">= 2.4.2"])
     end
   else
     s.add_dependency(%q<rake>, [">= 0"])
