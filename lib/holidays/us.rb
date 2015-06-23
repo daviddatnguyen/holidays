@@ -27,7 +27,7 @@ module Holidays
             {:mday => 14, :type => :informal, :name => "Valentine's Day", :regions => [:us, :ca]}],
       5 => [{:wday => 1, :week => -1, :name => "Memorial Day", :regions => [:us]},
             {:wday => 0, :week => 3, :type => :informal, :name => "Father's Day", :regions => [:us, :ca]}],
-      7 => [{:mday => 4, :observed => lambda { |date| Holidays.to_weekday_if_weekend(date) }, :observed_id => "to_weekday_if_weekend", :name => "Independence Day", :regions => [:us]}],
+      7 => [{:mday => 4, :observed => lambda { |date| puts 'here'; Holidays.to_monday_if_sunday(date) }, :observed_id => "to_monday_if_sunday", :name => "Independence Day", :regions => [:us]}],
       9 => [{:wday => 1, :week => 1, :name => "Labor Day", :regions => [:us]}],
       10 => [{:wday => 1, :week => 2, :name => "Columbus Day", :regions => [:us]},
             {:mday => 31, :type => :informal, :name => "Halloween", :regions => [:us, :ca]}],
