@@ -13,7 +13,7 @@ module Holidays
           9 => [{:wday => 1, :week => 1, :name => "Labor Day", :regions => [:gusto]}],
           11 => [{:wday => 4, :week => 4, :name => "Thanksgiving", :regions => [:gusto]},
                 {:wday => 5, :week => 4, :name => "Day After Thanksgiving", :regions => [:gusto]}],
-          12 => [{:mday => 25, :observed => lambda { |date| Holidays.to_weekday_if_weekend(date) }, :observed_id => "to_weekday_if_weekend", :name => "Christmas Day", :regions => [:us, :gusto]}],
+          #12 => [{:mday => 25, :observed => lambda { |date| Holidays.to_weekday_if_weekend(date) }, :observed_id => "to_weekday_if_weekend", :name => "Christmas Day", :regions => [:us, :gusto]}],
       }
     end
   end
