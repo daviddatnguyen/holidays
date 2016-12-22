@@ -35,7 +35,7 @@ months:
   - name: Independence Day
     regions: [us]
     mday: 4
-    observed: to_weekday_if_weekend
+    observed: to_monday_if_sunday
   9: 
   - name: Labor Day
     week: 1

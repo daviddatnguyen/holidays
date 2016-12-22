@@ -75,6 +75,16 @@ class HolidaysTests < Test::Unit::TestCase
     holidays = Holidays.on(@date, [:ca_bc,:ca])
     assert_equal 1, holidays.length
   end
+
+  def test_independence_day
+    assert_equal 1, Holidays.on(Date.civil(2014,7,4), :us, :observed).length
+
+    # Not bank holiday if falls into a Sat
+    assert_equal 0, Holidays.on(Date.civil(2015,7,3), :us, :observed).length
+
+    # Bank holiday if falls into a Sun
+    assert_equal 1, Holidays.on(Date.civil(2021,7,5), :us, :observed).length
+  end
   
   def test_observed_dates
     # Should fall on Tuesday the 1st
